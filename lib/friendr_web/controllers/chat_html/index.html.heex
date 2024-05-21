@@ -1,0 +1,227 @@
+<style>
+    main {
+        background-image: url("https://static1.srcdn.com/wordpress/wp-content/uploads/2021/01/A-collage-of-the-faces-of-the-main-cast-of-Friends-all-smiling-slightly.jpg");
+        background-size: cover;
+        background-position: center;
+    }
+
+    .chat-container {
+        width: 800px;
+        height: 600px;
+        margin: auto;
+        background-image: url("https://wallpapercave.com/wp/wp4410721.jpg");
+        border-radius: 8px;
+        padding: 20px;
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    h1 {
+        font-size: 32px;
+        font-weight: bold;
+        color: #281b0d;
+        border-bottom: solid 1px black;
+    }
+
+    #form-message {
+        width: 100%;
+        display: flex;
+    }
+
+    #input-message {
+        width: 100%;
+        border-radius: 5px;
+        margin-right: 20px;
+    }
+
+      .message {
+        width: 40%;
+        height: auto;
+        padding: 5px 10px;
+
+    }
+
+    .message-container {
+        display: flex;
+        width: 100%;
+        margin: 8px 0;
+
+    }
+
+    .interlocutor-message {
+        background-color: white;
+        color: #2c3e50;
+         border-radius: 15px 15px 15px 0px;
+    }
+
+    .my-message {
+        background-color: #2c3e50;
+        margin-left: auto;
+        color: white;
+         border-radius: 15px 15px 0px 15px;
+    }
+
+    .message-content {
+        font-size: 16px;
+        font-weight: bold;
+    }
+    #messages {
+       overflow-y: auto;
+       max-height: 430px;
+       margin-top: 10px;
+       padding-right: 10px;
+       position: relative;
+
+    }
+
+     #messages::-webkit-scrollbar {
+        width: 6px;
+        cursor: pointer;
+    }
+
+    #messages::-webkit-scrollbar-thumb {
+        background-color: #2c3e50;
+        border-radius: 10px;
+        cursor: pointer !important;
+    }
+
+    #messages::-webkit-scrollbar-track {
+        background-color: transparent;
+        cursor: pointer;
+    }
+    img{
+        width: 45px;
+        height: 42px;
+    }
+
+     .scroll-to-bottom {
+        bottom: 110px;
+        left: 48%;
+        position: absolute;
+        border: none;
+        border-radius: 50%;
+        color: white;
+        width: 40px;
+        height: 30px;
+        cursor: pointer;
+        display: none;
+        margin: 0 auto;
+    }
+</style>
+
+<div class="chat-container">
+    <div>
+        <h1>Chat with <i><%= @interlocutor.name %></i></h1>
+
+        <div id="messages"  onscroll="myFunction()">
+            <%= for message <- @messages do %>
+                <div class="message-container">
+                    <%= if message.sender_id == @interlocutor.id do %>
+                        <div class="message interlocutor-message">
+                            <span class="message-content"><%= message.content %></span>
+                        </div>
+                    <%= else %>
+                        <div class="message my-message">
+                            <span class="message-content"><%= message.content %></span>
+                        </div>
+                    <% end %>
+                </div>
+            <% end %>
+        </div>
+        <button class="scroll-to-bottom" onclick="scrollToBottom()">
+        <img src="https://th.bing.com/th/id/R.1f3bc62cd091dcbadaae4bab82bfc753?rik=KBUb5HgrAYC8fw&riu=http%3a%2f%2fclipart-library.com%2fimages_k%2ftransparent-down-arrow%2ftransparent-down-arrow-2.png&ehk=RKMJQxsr94N83%2fAayDfrvN%2fyUfCJUYy9p7LfuWRxzao%3d&risl=&pid=ImgRaw&r=0" alt="Scroll to Bottom">
+    </button>
+    </div>
+
+
+
+    <form id="form-message">
+        <input type="text" name="message" id="input-message">
+        <input type="hidden" id="receiver_id" name="receiver_id" value={@interlocutor.id} />
+        <button type="submit" id="button-message">
+            <img src="https://cdn1.iconfinder.com/data/icons/admin-panel-white-with-multicolor-circle-backgroun/2048/Send_message-512.png"/>
+        </button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+           const messagesContainer = document.getElementById("messages");
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        const form = document.getElementById("form-message");
+        form.addEventListener("submit", () => {
+            event.preventDefault();
+            const csrfToken = document.querySelector("meta[name='csrf-token']").content;
+
+            const messageInput = document.getElementById("input-message");
+            const receiver_id = document.getElementById("receiver_id").value;
+            const message = messageInput.value;
+            fetch(`/chat/${receiver_id}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": csrfToken,
+                },
+                body: JSON.stringify({ message: message }),
+            })
+                .then((response) => {
+                    messageInput.value = "";
+
+                    const newMessageContainer = document.createElement("div");
+                    newMessageContainer.classList.add("message-container");
+                    const newMessage = document.createElement("div");
+                    newMessage.classList.add("message", "my-message");
+                    const newSpan = document.createElement("span");
+                    newSpan.classList.add("message-content");
+                    newSpan.textContent = message;
+                    newMessage.appendChild(newSpan);
+                    newMessageContainer.appendChild(newMessage);
+                    const messagesContainer = document.getElementById("messages");
+                    messagesContainer.appendChild(newMessageContainer);
+
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                })
+
+
+
+        });
+    })
+
+                     function myFunction(){
+                     var messagesContainer = document.getElementById("messages");
+                    console.log(messagesContainer.scrollTop);
+                    if(messagesContainer.scrollTop == 0){
+                        showScrollToBottomButton();
+                    }
+                    else if (messagesContainer.scrollHeight - messagesContainer.scrollTop === messagesContainer.clientHeight) {
+                      hideScrollToBottomButton();
+                    }else if (messagesContainer.scrollTop > 0) {
+                                    showScrollToBottomButton();
+                     } else {
+                          hideScrollToBottomButton();
+                     }
+                }
+
+
+     function scrollToBottom() {
+        const messagesContainer = document.getElementById("messages");
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        hideScrollToBottomButton();
+    }
+
+    // Function to show the scroll-to-bottom button
+    function showScrollToBottomButton() {
+        const scrollToBottomButton = document.querySelector(".scroll-to-bottom");
+        scrollToBottomButton.style.display = "block";
+    }
+
+    // Function to hide the scroll-to-bottom button
+    function hideScrollToBottomButton() {
+        const scrollToBottomButton = document.querySelector(".scroll-to-bottom");
+        scrollToBottomButton.style.display = "none";
+    }
+</script>

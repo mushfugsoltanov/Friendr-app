@@ -1,0 +1,21 @@
+<main class="px-4 py-20 sm:px-6 lg:px-8 relative">
+  <style>
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background-color: black;
+      opacity: 0.5;
+    }
+    main{
+      background-size: cover;
+      background-position: center;
+      min-height: 100vh;
+      max-height: auto;
+    }
+  </style>
+  <div class="mx-auto justify-center relative">
+    <.flash_group flash={@flash} />
+    <%= @inner_content %>
+  </div>
+  <div class="overlay"></div>
+</main>

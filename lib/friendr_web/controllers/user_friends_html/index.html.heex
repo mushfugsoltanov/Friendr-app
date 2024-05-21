@@ -1,0 +1,333 @@
+<style>
+    .elar {
+      max-width: 800px !important;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 10px;
+      position: relative;
+      z-index: 2;
+    }
+
+    form {
+      margin: 0;
+      padding: 0;
+    }
+
+    .flex-container {
+      display: flex;
+      align-items: center;
+      border-bottom: 2px solid #2c3e50;
+      padding: 5px;
+    }
+
+    input {
+      flex: 1;
+      background-color: transparent;
+      border: none;
+      color: #fff;
+      margin-right: 10px;
+      outline: none;
+    }
+
+    button {
+      background-color: #2c3e50 !important;
+      border: 2px solid #2c3e50;
+      color: #fff;
+      font-size: 16px;
+      padding: 8px 6px;
+      border-radius: 5px;
+      cursor: pointer;
+      outline: none !important;
+    }
+
+    button:hover {
+      background-color: #34495e;
+    }
+
+
+    h2 {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 1px solid #34495e;
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #2c3e50;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    tr:nth-child(even) {
+      background-color: #34495e;
+    }
+
+    tr:nth-child(odd) {
+      background-color: #2c3e50;
+    }
+
+    td {
+      color: #fff;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+     .view-profile-button{
+      background-color: green !important;
+      border: 2px solid #2c3e50 !important;
+      font-size: 16px !important;
+      padding: 8px 6px !important;
+      border-radius: 5px !important;
+      cursor: pointer !important;
+      outline: none !important;
+      width: 90%;
+      text-align: center;
+      font-weight: bolder !important;
+    }
+
+    /* Styles for Interested and Ignore buttons */
+    
+
+    
+
+    .ignore-button {
+      background-color: #95a5a6 !important;
+      width: 90% !important;
+      background-color: #607d8b !important;
+      font-weight: bolder !important;
+    }
+
+    .ignore-button:hover {
+      background-color: #7f8c8d !important;
+    }
+    .res_for {
+      color: #2c3e50;
+    }
+    main{
+      background-image: url("https://wallpapercave.com/wp/wp2237218.jpg");
+      background-size: cover;
+      background-position: center;
+    }
+    .receiver_id{
+      display: none;
+    }
+    .csrf{
+      display: none !important;
+    }
+   
+
+    
+
+    .ignore-button:disabled {
+      background-color: #bdc3c7 !important;
+      border-color: #bdc3c7 !important;
+      cursor: not-allowed !important;
+    }
+
+    .user-id{
+      display: none !important;
+    }
+    #results-table{
+      display: none;
+    }
+    .received-request-id{
+      display: none !important;
+    }
+    .sent-request-id{
+      display: none !important;
+    }
+
+    .flex_container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    row-gap: 3px !important;
+}
+
+
+.button_container{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: 5px !important;
+  width: 100% !important;x1
+}
+  </style>
+  <div class="elar">
+
+    <form action="" method="get" class="my-4">
+      <h1 class="text-4xl font-bold mt-4 mb-8 res_for text-center">Search for Friends</h1>
+      <div class="flex-container">
+        <input type="text"  id="user_search_input" name="search_text" placeholder="Search" class="appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-0">
+        <button type="submit"  id="user_search_button" class="flex-shrink-0 text-sm border-4 text-white py-1 px-2 rounded">
+          Search
+        </button>
+      </div>
+    </form>
+    
+
+    <%= if @search_text do %>
+      <h2 class="text-2xl font-bold mt-4 mb-2 res_for" id="restext"><%= @search_text %></h2>
+        <script>
+          document.addEventListener('DOMContentLoaded', (event) => {
+            const restext = document.getElementById('restext');
+            if (restext.textContent !== "Friend List") {
+              restext.textContent = "Search results for - " + restext.textContent;
+            }
+          });
+        </script>
+
+      <table class="min-w-full bg-white border border-gray-300" id="results-table">
+        <thead>
+          <tr>
+            <th class="px-4 py-2 border-b border-gray-300">Name</th>
+            <th class="px-4 py-2 border-b border-gray-300">Location</th>
+            <th class="px-4 py-2 border-b border-gray-300">Distance</th>
+            <th class="px-4 py-2 border-b border-gray-300">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+              <%= if Enum.empty?(@users) do %>
+        <script>
+          document.addEventListener('DOMContentLoaded', (event) => {
+            // Get the results table and set its display style to "table"
+            const resultsTable = document.getElementById('results-table');
+            if (resultsTable) {
+              resultsTable.style.display = "table";
+            }
+          });
+        </script>
+        <tr>
+          <td colspan="4" class="text-center py-4">No friend found</td>
+        </tr>
+          <% else %>
+            <%= for user <- @users do %>
+              <tr>
+                <td class="border px-4 py-2"><%= user.name %></td>
+                <td class="border px-4 py-2"><%= user.location %></td>
+                <td class="border px-4 py-2"><%= if user.distance, do: user.distance, else: "N/A" %> <span>km</span></td>
+                <td class="border px-4 py-2">
+                <div class="flex_container">
+
+                  <a href={~p"/users/user/#{user.id}"} class="view-profile-button" id="view-profile-button">
+                  View Profile
+                  </a>
+
+                  <form id="friendship-request-form" method="post" class="button_container">
+                  <%= for request <- user.received_friendship_requests do %>
+                    <%= if request.status do %>
+                      <p name="received_request_id" type="hidden" class="received-request-id"><%= request.id %></p>
+                    <% end %>
+                  <% end %>
+                  <%= for request <- user.sent_friendship_requests do %>
+                    <%= if request.status do %>
+                      <p name="sent_request_id" type="hidden" class="sent-request-id"><%= request.id %></p>
+                    <% end %>
+                  <% end %>
+                  <p name="receiver_id" type="hidden" class="user-id"><%= user.id %></p>
+                  <button type="button" class="ignore-button" id="unfriend-button">
+                    Unfriend
+                  </button>
+                </form>
+                </div>
+                </td>
+              </tr>
+            <% end %>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
+  </div>
+
+
+  <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const userIdElements = document.querySelectorAll(".user-id");
+    const csrfToken = document.querySelector("meta[name='csrf-token']").content;
+    const resultsTable = document.getElementById("results-table");
+
+
+    userIdElements.forEach((userIdElement) => {
+      const userId = userIdElement.textContent;
+      const ignoreButton = userIdElement.closest("tr").querySelector(".ignore-button");
+      const receivedRequestIdElement = userIdElement.closest("form").querySelector(".received-request-id");
+      const sentRequestIdElement = userIdElement.closest("form").querySelector(".sent-request-id");
+
+      const receivedRequestId = receivedRequestIdElement ? receivedRequestIdElement.textContent.trim() : null;
+      const sentRequestId = sentRequestIdElement ? sentRequestIdElement.textContent.trim() : null;
+      
+      fetch(`/user_ignore/check_ignore?ignored_user_id=${userId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          if (data.status === "ignored") {
+            resultsTable.style.display = "table";
+            ignoreButton.setAttribute("disabled", true);
+          } else if (data.status === "not_ignored") {
+            ignoreButton.textContent = "Unfriend";
+            resultsTable.style.display = "table";
+          } 
+        })
+        .catch((error) => {
+          console.error("There was a problem with the fetch operation:", error);
+        });
+
+      ignoreButton.addEventListener("click", function () {
+            fetch("/friendship_request/decline", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": csrfToken,
+              },
+              body: JSON.stringify({
+                request_id: receivedRequestId || sentRequestId,
+                user_id: userId,
+              }),
+            })
+              .then((response) => {
+                if (!response.ok) {
+                  throw new Error("Network response was not ok");
+                }
+                return response.json();
+              })
+              .then((data) => {
+                if (data.status === "success") {
+                  ignoreButton.textContent = "Unfriending...";
+                  window.location.reload();
+                } else {
+                  console.error("Friendship request failed:", data.error);
+                  ignoreButton.textContent = "Error";
+                }
+              })
+              .catch((error) => {
+                console.error("There was a problem with the fetch operation:", error);
+                ignoreButton.textContent = "Error";
+              });
+         
+      });
+    });
+  });
+</script>

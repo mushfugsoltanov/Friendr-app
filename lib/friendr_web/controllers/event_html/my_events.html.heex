@@ -1,0 +1,293 @@
+<style>
+main{
+      background-image: url("https://wallpapercave.com/wp/wp2237218.jpg");
+      background-size: cover;
+      background-position: center;
+}
+form {
+      margin: 0;
+      padding: 0;
+    }
+
+    .flex-container {
+      display: flex;
+      align-items: center;
+      border-bottom: 2px solid #2c3e50;
+      padding: 5px;
+    }
+
+    input {
+      flex: 1;
+      background-color: transparent;
+      border: none;
+      color: #fff;
+      margin-right: 10px;
+      outline: none;
+    }
+
+    .buton {
+      background-color: #2c3e50 !important;
+      border: 2px solid #2c3e50;
+      color: #fff;
+      font-size: 16px;
+      padding: 8px 6px;
+      border-radius: 5px;
+      cursor: pointer;
+      outline: none !important;
+    }
+
+    .buton:hover {
+      background-color: #34495e;
+    }
+
+
+    h2 {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      text-align: center !important;
+      color: #fff !important;
+    }
+
+    th, td {
+      border: 1px solid #fff;
+      border-bottom: 5px solid #fff !important;
+      padding: 12px;
+      text-align: center !important;
+    }
+
+    th {
+      background-color: #2c3e50;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    tr:nth-child(even) {
+      background-color: #34495e;
+    }
+
+    tr:nth-child(odd) {
+      background-color: #2c3e50;
+    }
+
+    td {
+      color: #fff;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+#update_info{
+  display: none;
+  color: #2c3e50;
+  font-weight: bold;
+  text-align: center;
+  margin: 10px auto; 
+}
+
+.button_container{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: 5px !important;
+  width: 100% !important;x1
+}
+.button-right{
+  display: none !important;
+}
+
+ .flex-container {
+      display: flex !important;
+      align-items: center !important;
+      border-bottom: 2px solid #2c3e50 !important;
+      padding: 5px !important;
+    }
+#location_field{
+  display: none !important;}
+
+
+  .elar {
+      max-width: 800px !important;
+      margin: 0 auto;
+      padding: 10px;
+      background-color: white;
+      border-radius: 10px;
+      position: relative;
+      z-index: 2;
+}
+
+
+
+tr span{
+  color: #fff !important;
+  margin: 0 auto !important;
+  padding: 0px !important;
+  width: 0  !important;
+}
+
+tr div{
+  color: #fff !important;
+  margin: 0 auto !important;
+  padding: 0px !important;
+}
+
+td{
+  padding: 15px 10px !important;}
+
+tr:nth-child(even):hover {
+   background-color: #34495e !important;
+}
+
+tr:nth-child(odd):hover {
+  background-color: #2c3e50 !important;
+}
+
+
+thead tr th{
+  padding: 15px 10px !important;
+  text-align: center !important;
+  font-weight: bold !important;
+}
+
+td div span:nth-child(2) a{
+  border-radius: 5px !important;
+  border: 1px solid #3498db !important;
+  padding: 5px 10px !important;
+  color: #3498db !important;
+  transition: background-color 0.3s ease;
+  
+}
+
+td div span:last-child a{
+  border-radius: 5px !important;
+  border: 1px solid #fe5c5c !important;
+  padding: 5px 10px !important;
+  color: #fe5c5c !important;
+  transition: background-color 0.3s ease;
+}
+
+.whitespace-nowrap{
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+td div span:last-child a:hover{
+  background-color: #fe5c5c !important;
+  color: white !important;
+}
+
+td div span:nth-child(2) a:hover{
+  background-color: #3498db !important;
+  color: white !important;
+}
+
+a button{
+  background-color: #fff !important;
+  color: #27ae60 !important;
+  padding: 10px 10px !important;
+  border: 2px solid #27ae60 !important;
+  border-radius !important;
+  cursor: pointer !important;
+  font-size: 16px !important;
+  transition: background-color 0.3s ease !important; 
+}    
+
+a button:hover{
+  background-color: #27ae60 !important;
+  color: white !important;
+}
+
+tbody tr{
+  transition: transform 0.3s ease !important; 
+}
+
+tbody tr:hover{
+  transform: scale(1.03);
+}
+.passed_info{
+  color: #fe5c5c !important;
+  font-weight: bold !important;
+  font-size: 16px !important;
+}
+.future_info{
+  color: #27ae60 !important;
+  font-weight: bold !important;
+  font-size: 16px !important;
+}
+    
+      
+</style>
+<div class="elar">
+<div id="content">
+   <h1 class="text-4xl font-bold mt-4 mb-8 res_for text-center">My Events</h1>
+
+  <!-- Table -->
+ <.table id="events_all" rows={@user_events} row_click={&JS.navigate(~p"/events/#{&1.id}")}>
+      <:col :let={event} label="Name"><%= event.name %></:col>
+      <:col :let={event} label="Date">
+      <script>
+       var currentDate = new Date();
+        var eventDate = new Date('<%= event.date %>');
+        if (eventDate.getTime() < currentDate.getTime()) {
+          document.write('<p><i class="passed_info">Passed Event</i></p>');
+        }
+        else{
+          document.write('<p><i class="future_info">Upcoming Event</i></p>');
+        }
+
+
+</script>
+          <%= event.date %></:col>
+      <:col :let={event} label="Location"><%= event.location %></:col>
+      <:col :let={event} label="Price">€<%= event.price %></:col>
+     
+      <:action :let={event}>
+        <script>
+        var currentDate = new Date();
+        var eventDate = new Date('<%= event.date %>');
+        if (eventDate.getTime() >= currentDate.getTime()) {
+          document.write('<a href="/events/<%= event.id %>/edit">Edit</a>');
+        }
+      </script>
+      </:action>
+      <:action :let={event}>
+        <.link href={~p"/my_events/#{event.id}"} method="delete" data-confirm="Are you sure?">
+          Delete
+        </.link>
+      </:action>
+    </.table>
+  
+
+</div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    var eventsTable = document.getElementById('events_all');
+    var event = eventsTable.innerText;
+    console.log(eventsTable);
+    console.log(event);
+
+    if (!event) { 
+      var noEventsRow = document.createElement('tr');
+      var noEventsCell = document.createElement('td');  
+      noEventsCell.innerText = 'No events found.';
+      noEventsRow.appendChild(noEventsCell);
+      eventsTable.appendChild(noEventsRow);
+      noEventsRow.style.textAlign = 'center';
+      noEventsCell.setAttribute('colspan', '7');
+      noEventsRow.classList.add('no-events-row');
+      noEventsCell.classList.add('no-events-cell');
+      
+    }
+  });
+</script>
+

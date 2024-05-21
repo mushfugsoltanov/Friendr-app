@@ -1,0 +1,43 @@
+<style>
+  .mas{
+    position: relative;
+    z-index: 2 !important;
+    padding: 30px !important;
+    background-color: #fff;
+    border-radius: 10px;
+    max-width: 800px !important;
+  }
+  .form_container{
+    padding: 10px !important;
+    max-width: 500px;
+  }
+  main{
+      background-image: url("https://th.bing.com/th/id/R.4b051e5d69ed2f27c2b2295dade8426d?rik=XqJA%2fJAgRYqGSw&riu=http%3a%2f%2fstatic.guim.co.uk%2fsys-images%2fGuardian%2fPix%2fpictures%2f2014%2f9%2f3%2f1409755613016%2fFriends-season-10-014.jpg&ehk=u6KIb7oEbC2OskrdCMXkaUXhgRbF5v5MbLzugblZ5Co%3d&risl=&pid=ImgRaw&r=0");
+    }
+    .pas_for{
+      color: #2c3e50;
+    }
+</style>
+
+<div class="mas mx-auto">
+<div class="mx-auto max-w-sm form_container">
+  <.header class="text-center">
+    Forgot your password?
+    <:subtitle>We'll send a password reset link to your inbox</:subtitle>
+  </.header>
+
+  <.simple_form :let={f} for={@conn.params["user"]} as={:user} action={~p"/users/reset_password"}>
+    <.input field={f[:email]} type="email" placeholder="Email" id="reset_email" required />
+    <:actions>
+      <.button phx-disable-with="Sending..." class="w-full" id="reset_send">
+        Send password reset instructions
+      </.button>
+    </:actions>
+  </.simple_form>
+
+  <p class="text-center text-sm mt-4">
+    <.link href={~p"/users/register"}>Register</.link>
+    | <.link href={~p"/users/log_in"}>Log in</.link>
+  </p>
+</div>
+</div>

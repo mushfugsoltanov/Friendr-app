@@ -1,0 +1,209 @@
+<style>
+  .elar {
+    max-width: 1000px !important;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    position: relative;
+    z-index: 2;
+  }
+
+  main {
+    background-image: url("https://wallpapercave.com/wp/wp2237218.jpg");
+    background-size: cover;
+    background-position: center;
+  }
+
+  #map-container {
+    overflow: hidden;
+    transition: max-height 0.5s ease-out;
+  }
+
+  #map {
+    height: 500px;
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  select {
+    text-align: center !important;
+  }
+  .time{
+    text-align: center !important;
+  }
+  .filter_container
+  {
+    display: flex !important;
+    justify-content: space-around !important;
+    margin-bottom: 20px;
+  }
+</style>
+
+<div class="elar">
+  <.header>
+    Events Locations on Map
+  </.header>
+
+
+  <div class="filter_container flex mt-5">
+    <div class="flex-2 w-64 text-center">
+  <.label for="topicFilter" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Filter by topics</.label>
+  <select id="topicFilter" multiple onchange="showFilteredEvents()" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+    <%= for topic <- @topics do %>
+      <option ><%= topic.name %></option>
+    <% end %>
+  </select>
+  </div>
+<div class="flex-2 w-64 text-center">
+  <.label for="dateFilter" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Filter by date and time range</.label>
+  <.label for="dateFilter" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Start Date:</.label>
+  <input type="datetime-local" id="dateFilterStart" onchange="showFilteredEvents()" class="mb-3 time bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+    <.label for="dateFilter" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">End Date:</.label>
+  <input type="datetime-local" id="dateFilterEnd" onchange="showFilteredEvents()" class="time bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+  </div>
+  </div>
+  <div id="map-container">
+    <div id="map"></div>
+  </div>
+  <script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false&key=AIzaSyD81PVlVgFCUgsGwlAV7a8GhVrtDYObfhg"></script>
+
+  <script>
+    var eventsLocations = JSON.parse('<%= raw @json_events_locations %>');
+    var userLocation = JSON.parse('<%= raw @json_user_location %>');
+
+    console.log("User Location:", userLocation);
+    console.log("Events Locations:", eventsLocations);
+
+    var map;
+    var markers = [];
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+      var R = 6371; // Radius of the Earth in km
+      var dLat = ((lat2 - lat1) * Math.PI) / 180;
+      var dLon = ((lon2 - lon1) * Math.PI) / 180;
+      var a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos((lat1 * Math.PI) / 180) *
+          Math.cos((lat2 * Math.PI) / 180) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      var distance = R * c; // Distance in km
+      return distance;
+    }
+
+    function clearMarkers() {
+      markers.forEach(function (marker) {
+        marker.setMap(null);
+      });
+      markers = [];
+    }
+
+    function showAllEvents() {
+      initMap();
+    }
+
+    function showFilteredEvents() {
+      var selectedTopics = Array.from(document.getElementById("topicFilter").selectedOptions, option => option.value);
+      var startDate = document.getElementById("dateFilterStart").value;
+      var endDate = document.getElementById("dateFilterEnd").value;
+
+      var filteredEvents = eventsLocations.filter(function (event) {
+        var eventDate = new Date(event.event_date);
+
+        return (selectedTopics.length === 0 || selectedTopics.some(topic => event.event_topics.includes(topic))) &&
+          calculateDistance(userLocation.location[0], userLocation.location[1], event.location[0], event.location[1]) <= 10 &&
+          (!startDate || eventDate >= new Date(startDate)) &&
+          (!endDate || eventDate <= new Date(endDate));
+      });
+
+      clearMarkers();
+      showFilteredEventsOnMap(filteredEvents);
+    }
+
+    function showFilteredEventsOnMap(filteredEvents) {
+  filteredEvents.forEach(function (event) {
+     var eventDate = new Date(event.event_date);
+      if (eventDate >= new Date()) {
+    var eventLatLng = {
+      lat: event.location[0],
+      lng: event.location[1]
+    };
+    var eventMarker = new google.maps.Marker({
+      position: eventLatLng,
+      map: map,
+      title: event.name
+    });
+    markers.push(eventMarker);
+
+    var eventInfoWindow = new google.maps.InfoWindow({
+      content: `<div style="max-width: 200px;">
+        <p style="font-size: 16px; margin-bottom: 8px;"><strong>${event.name}</strong></p>
+        <p style="font-size: 14px; margin-bottom: 4px;"><strong>Location: </strong> <i>${event.location_txt}</i></p>
+        <p style="font-size: 14px; margin-bottom: 4px;"><strong>Price: </strong>€<i>${event.price}</i></p>
+        <p style="font-size: 14px; margin-bottom: 4px;"><strong>Date: </strong> <i>${event.event_date}</i></p>
+         <p style="font-size: 14px; margin-bottom: 4px;"><strong>Public: </strong> <i>${event.is_public}</i></p>
+        <p style="font-size: 14px; margin-bottom: 8px;"><strong>Topics: </strong> </p>
+        <p style="font-size: 14px; margin-bottom: 4px;">
+          ${event.event_topics.map(topic => `<span style="background-color: #2c3e50; color: #fff; padding: 4px; border-radius: 4px; margin-right: 4px;">${topic}</span>`).join('')}
+        </p>
+        <p style="margin-top: 12px;"><a href="/events/${event.event_id}" style="text-decoration: none; color: #3498db; font-weight: bold;">Event Details</a></p>
+      </div>`
+    });
+
+    eventMarker.addListener('click', function () {
+      eventInfoWindow.open(map, eventMarker);
+    });
+      }
+  });
+}
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 13
+      });
+
+      if (userLocation.location && userLocation.location.length === 2) {
+        var centerLatLng = {
+          lat: userLocation.location[0],
+          lng: userLocation.location[1]
+        };
+        map.setCenter(centerLatLng);
+
+        var userIcon = {
+          url: 'https://www.pinclipart.com/picdir/big/174-1747068_vector-graphics-google-map-marker-green-clipart.png',
+          scaledSize: new google.maps.Size(22, 35)
+        };
+
+        console.log("Adding User Marker:", userLocation);
+        var userMarker = new google.maps.Marker({
+          position: centerLatLng,
+          map: map,
+          title: userLocation.name,
+          icon: userIcon
+        });
+
+        var userInfoWindow = new google.maps.InfoWindow({
+          content: `<div style="max-width: 200px;">
+            <p style="font-size: 16px; margin-bottom: 8px;"><strong>${userLocation.name}</strong></p>
+          </div>`
+        });
+
+        userMarker.addListener('click', function () {
+          userInfoWindow.open(map, userMarker);
+        });
+      } else {
+        console.error("Invalid user location:", userLocation);
+      }
+
+      showFilteredEventsOnMap(eventsLocations);
+    }
+
+    window.onload = function () {
+      initMap();
+    };
+  </script>
+
+  <.back navigate={~p"/events"}>Back to events</.back>
+</div>

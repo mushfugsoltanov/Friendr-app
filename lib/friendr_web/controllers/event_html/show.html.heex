@@ -1,0 +1,288 @@
+<style>
+.elar {
+      max-width: 800px !important;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 10px;
+      position: relative;
+      z-index: 2;
+}
+
+main{
+      background-image: url("https://wallpapercave.com/wp/wp2237218.jpg");
+      background-size: cover;
+      background-position: center;
+}
+
+#comments-container {
+  max-width: 800px !important;
+  height: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: white;
+  border-radius: 10px;
+  position: relative;
+  z-index: 2;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+   background-image: url("https://wallpapercave.com/wp/wp4410721.jpg");
+}
+
+#form-comment {
+  width: 100%;
+  display: flex;
+}
+
+#input-comment {
+  width: 100%;
+  border-radius: 5px;
+  margin-right: 20px;
+}
+
+#button-message {
+        background-color: #515151;
+        border-radius: 5px;
+        padding: 0 8px;
+        font-weight: bold;
+        color: white;
+    }
+#comments{
+  overflow-y: auto;
+       max-height: 430px;
+       margin-top: 10px;
+       padding-right: 10px;
+}
+
+#comments::-webkit-scrollbar {
+        width: 6px;
+        cursor: pointer;
+    }
+
+    #comments::-webkit-scrollbar-thumb {
+        background-color: #2c3e50;
+        border-radius: 10px;
+        cursor: pointer !important;
+    }
+
+    #comments::-webkit-scrollbar-track {
+        background-color: transparent;
+        cursor: pointer;
+    }
+.comment {
+  background-color: white;
+  border-radius: 5px;
+  padding: 3px 10px;
+  margin: 10px 0;
+  border-radius: 15px 15px 15px 0px;
+  width: 50%;
+}
+
+  .radio-buttons-engage{
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .flex-engage{
+    display: flex !important;
+    justify-content: start !important;
+    align-items: center !important;
+    margin - bottom: 10px !important;
+    column-gap: 7px !important;
+  }
+  #user_name{
+    display: none;
+  }
+  #egagement_id{
+    display: none;
+  }
+  .comment_user{
+    font-weight: bold !important;
+    display: block !important;
+  }
+
+  header div h1{
+    font-size: 1.5rem !important;
+    font-weight: bold !important;
+    color: #2c3e50 !important;
+  }
+  a button{
+  background-color: #fff !important;
+  color: #27ae60 !important;
+  padding: 10px 15px !important;
+  border: 1px solid #27ae60 !important;
+  border-radius 10px !important;
+  cursor: pointer !important;
+  font-size: 16px !important;
+  transition: background-color 0.3s ease !important; 
+}    
+
+a button:hover{
+  background-color: #27ae60 !important;
+  color: white !important;
+}
+</style>
+<div class="elar">
+
+<p id="egagement_id"><%= @engagement_status %></p>
+<p id="user_name"><%= @user.name %></p>
+  <.header>
+    Event "<%= @event.name %>" details
+    <:actions>
+      <%= if @user.id == @event.user_id do %>
+
+      <script>
+        var currentDate = new Date();
+        var eventDate = new Date('<%= @event.date %>');
+        if (eventDate.getTime() >= currentDate.getTime()) {
+          document.write('<a href="/events/<%= @event.id %>/edit"><button>Edit</button></a>');
+        }
+      </script>
+      <% end %>
+    </:actions>
+  </.header>
+
+
+
+  <.list>
+    <:item title="Created By" id="event_creator_name"><%= @event_creator %></:item>
+    <:item title="Name"><%= @event.name %></:item>
+    <:item title="Date"><%= @event.date %></:item>
+    <:item title="Location"><%= @event.location %></:item>
+    <:item title="Price">€<%= @event.price %></:item>
+    <:item title="Description"><%= @event.description %></:item>
+    <:item title="Actions">    
+    <div class="radio-buttons-engage">
+
+    <div class="flex-engage">
+   
+      <input type="radio" name="Engagement" id="not_going" value="0" phx-change="status_change">
+      <label for="not_going">Not Going</label>
+
+      </div>
+         <div class="flex-engage">
+
+      <input type="radio" id="Interested" name="Engagement" value="1" phx-change="status_change">
+      <label for="Interested">Interested</label>
+ </div>
+
+   <div class="flex-engage">
+      <input type="radio"  name="Engagement" value="2" id="Going" phx-change="status_change">
+      <label for="Going">Going</label>
+       </div>
+    </div>
+    </:item>
+
+
+    <:item title="Accessibility">
+      <%= if @event.is_public, do: "Public", else: "Private" %>
+    </:item>
+    <:item title="Topics">
+      <%= for topic <- @event.topics do %>
+        <%= topic.name %>
+      <% end %>
+    </:item>
+
+  </.list>
+
+</div>
+
+<div id="comments-container">
+  <div>
+    <.header>Comments</.header>
+    <div id="comments">
+      <%= for comment <- @event.comments do %>
+        <div class="comment">
+          <i class="comment_user"><strong><%= if comment.author.name == @user.name do "You" else comment.author.name end %>:</strong></i>
+          <%= comment.content %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <form id="form-comment">
+    <input type="text" name="message" id="input-comment">
+    <input type="hidden" id="event_id" name="event_id" value={@event.id} />
+    <button type="submit" id="button-message">Post</button>
+  </form>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const messagesContainer = document.getElementById("comments");
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    const engagementId = document.getElementById("egagement_id").textContent;
+    
+    switch (parseInt(engagementId)) {
+      case 0:
+        document.getElementById("not_going").checked = true;
+        break;
+      case 1:
+        document.getElementById("Interested").checked = true;
+        break;
+      case 2:
+        document.getElementById("Going").checked = true;
+        break;
+      default:
+        document.getElementById("not_going").checked = true;
+        break;
+    }
+
+    const userName = document.getElementById("user_name").textContent;
+    const eventCreatorNameElement = document.getElementsByClassName("text-zinc-700")[0];
+    const eventDateElement = new Date(document.getElementsByClassName("text-zinc-700")[2].textContent);
+    const eventCreatorName = eventCreatorNameElement.textContent;
+
+      var currentDate = new Date();
+      if (eventDateElement.getTime() < currentDate.getTime()) {
+          document.getElementsByClassName("flex gap-4 py-4 text-sm leading-6 sm:gap-8")[6].style.pointerEvents = 'none';
+        }
+
+
+
+
+    if (userName == eventCreatorName) {
+      document.getElementsByClassName("flex gap-4 py-4 text-sm leading-6 sm:gap-8")[6].style.pointerEvents = 'none';
+    }
+
+
+    const form = document.getElementById("form-comment");
+    form.addEventListener("submit", () => {
+      
+      event.preventDefault();
+      const csrfToken = document.querySelector("meta[name='csrf-token']").content;
+
+      const commentInput = document.getElementById("input-comment");
+      const event_id = document.getElementById("event_id").value;
+      const comment = commentInput.value;
+
+      const messagesContainer = document.getElementById("comments");
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+      fetch(`/comment`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-TOKEN": csrfToken,
+        },
+        body: JSON.stringify({ event_id: event_id, comment: comment }),
+      })
+      .then((response) => {
+        commentInput.value = "";
+
+        const newCommentDiv = document.createElement("div");
+        newCommentDiv.classList.add("comment");
+        const newI = document.createElement("i");
+        newI.textContent = "You: ";
+        newCommentDiv.textContent = comment;
+        newCommentDiv.insertBefore(newI, newCommentDiv.firstChild);
+        const commentsDiv = document.getElementById("comments");
+        commentsDiv.appendChild(newCommentDiv);
+      });
+    });
+  })
+</script>
+

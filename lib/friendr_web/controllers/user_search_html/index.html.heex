@@ -1,0 +1,618 @@
+<style>
+    .elar {
+      max-width: 1000px !important;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 10px;
+      position: relative;
+      z-index: 2;
+    }
+
+    form {
+      margin: 0;
+      padding: 0;
+    }
+
+    .flex-container {
+      display: flex;
+      align-items: center;
+      border-bottom: 2px solid #2c3e50;
+      padding: 5px;
+    }
+
+    input {
+      flex: 1;
+      background-color: transparent;
+      border: none;
+      color: #fff;
+      margin-right: 10px;
+      outline: none;
+    }
+
+    .buton {
+      background-color: #2c3e50 !important;
+      border: 2px solid #2c3e50;
+      color: #fff;
+      font-size: 16px;
+      padding: 8px 6px;
+      border-radius: 5px;
+      cursor: pointer;
+      outline: none !important;
+    }
+
+    .buton:hover {
+      background-color: #34495e;
+    }
+
+
+    h2 {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 1px solid #34495e;
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #2c3e50;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    tr:nth-child(even) {
+      background-color: #34495e;
+    }
+
+    tr:nth-child(odd) {
+      background-color: #2c3e50;
+    }
+
+    td {
+      color: #fff;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+     .view-profile-button{
+      background-color: green !important;
+      border: 2px solid #2c3e50 !important;
+      font-size: 16px !important;
+      padding: 8px 6px !important;
+      border-radius: 5px !important;
+      cursor: pointer !important;
+      outline: none !important;
+      width: 90%;
+      text-align: center;
+      font-weight: bolder !important;
+    }
+
+    /* Styles for Interested and Ignore buttons */
+    .interested-button {
+      background-color: #3498db !important;
+      width: 90% !important;
+      font-weight: bolder !important;
+    }
+
+    .interested-button:hover {
+      background-color: #2980b9 !important;
+      cursor: pointer !important;
+    }
+
+    .ignore-button {
+      background-color: #95a5a6 !important;
+      width: 90% !important;
+      background-color: #607d8b !important;
+      font-weight: bolder !important;
+    }
+
+    .ignore-button:hover {
+      background-color: #7f8c8d !important;
+    }
+    .res_for {
+      color: #2c3e50;
+    }
+    main{
+      background-image: url("https://wallpapercave.com/wp/wp2237218.jpg");
+      background-size: cover;
+      background-position: center;
+    }
+    .receiver_id{
+      display: none;
+    }
+    .csrf{
+      display: none !important;
+    }
+    .interested-button:disabled {
+      cursor: not-allowed !important;
+    }
+
+    .interested-button:disabled:hover {
+      background-color: #bdc3c7 !important;
+    }
+
+    .ignore-button:disabled {
+      background-color: #bdc3c7 !important;
+      border-color: #bdc3c7 !important;
+      cursor: not-allowed !important;
+    }
+
+    .user-id{
+      display: none !important;
+    }
+    #results-table{
+      display: none;
+    }
+    .received-request-id{
+      display: none !important;
+    }
+    .sent-request-id{
+      display: none !important;
+    }
+
+    .flex_container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    row-gap: 3px !important;
+}
+#update_info{
+  display: none;
+  color: #2c3e50;
+  font-weight: bold;
+  text-align: center;
+  margin: 10px auto; 
+}
+
+.button_container{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: 5px !important;
+  width: 100% !important;x1
+}
+.button-right{
+  display: none !important;
+}
+#location_field{
+  display: none !important;}
+
+  </style>
+  <div class="elar">
+<div class="location">
+  <.simple_form :let={f} for={@changeset} action={~p"/users/friend_search"}>
+    <.error :if={@changeset.action == :insert}>
+      Oops, something went wrong! Please check the errors below.
+    </.error>
+  <div>
+    <span id="update_info"><i>Please wait your location is updating...</i></span>
+    <div class="form-group" style="display: none; align-items: center;"  type="hidden">
+      <input id="auto_location" name="Location" type="radio" value="Location" class="cursor-pointer" required>
+      <label for="auto_location" class="control-label ms-2 cursor-pointer"><i>Give permission to Access you location</i></label>
+    </div>
+    <.input field={f[:auto_location_detection]} type="hidden" id="auto_location_detection" />
+    
+    <.input field={f[:location]} type="text" id="location_field" readonly  placeholder="Your Current Location" required />
+    </div>
+
+
+   <:actions class="button-row mt-1">
+      <.button phx-disable-with="Updating..." class="button-right" type="hidden">Update</.button>
+    </:actions>
+  </.simple_form>
+  </div>
+
+
+
+  <div id="content">
+
+    <form action="" method="get" class="my-4">
+      <h1 class="text-4xl font-bold mt-4 mb-8 res_for text-center">Search for Potential Friends</h1>
+      <div class="flex-container">
+        <input type="text" id="user_search_input" name="search_text" placeholder="Search" class="appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-0">
+        <button type="submit" id="user_search_button" class="buton flex-shrink-0 text-sm border-4 text-white py-1 px-2 rounded">
+          Search
+        </button>
+      </div>
+    </form>
+
+    <%= if @search_text do %>
+    <h2 class="text-2xl font-bold mt-4 mb-2 res_for">Search results for "<%= @search_text %>"</h2>
+    <% end %>
+
+    <table class="min-w-full bg-white border border-gray-300" id="results-table">
+      <thead>
+        <tr>
+          <th class="px-4 py-2 border-b border-gray-300">Name</th>
+          <th class="px-4 py-2 border-b border-gray-300">Location</th>
+          <th class="px-4 py-2 border-b border-gray-300">Distance</th>
+          <th class="px-4 py-2 border-b border-gray-300">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+            <%= if Enum.empty?(@users) do %>
+      <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+          // Get the results table and set its display style to "table"
+          const resultsTable = document.getElementById('results-table');
+          if (resultsTable) {
+            resultsTable.style.display = "table";
+          }
+        });
+      </script>
+      <tr>
+        <td colspan="4" class="text-center py-4">No users found</td>
+      </tr>
+        <% else %>
+          <%= for user <- @users do %>
+            <tr>
+              <td class="border px-4 py-2"><%= user.name %></td>
+              <td class="border px-4 py-2"><%= user.location %></td>
+              <td class="border px-4 py-2"><%= if user.distance, do: user.distance, else: "N/A" %> <span>km</span></td>
+              <td class="border px-4 py-2">
+              <div class="flex_container">
+
+                <a href={~p"/users/user/#{user.id}"} class="buton view-profile-button" id="view-profile-button">
+                View Profile
+                </a>
+
+                <form id="friendship-request-form" method="post" class="button_container">
+                <%= for request <- user.received_friendship_requests do %>
+                  <%= if request.status=="pending" do %>
+                    <p name="received_request_id" type="hidden" class="received-request-id"><%= request.id %></p>
+                  <% end %>
+                <% end %>
+                <%= for request <- user.sent_friendship_requests do %>
+                  <%= if request.status=="pending" do %>
+                    <p name="sent_request_id" type="hidden" class="sent-request-id"><%= request.id %></p>
+                  <% end %>
+                <% end %>
+                <p name="receiver_id" type="hidden" class="user-id"><%= user.id %></p>
+                <button type="button" class="buton interested-button" id="interested-button">
+                  Show Interest
+                </button>
+                <button type="button" class="buton ignore-button" id="ignore-button">
+                  Ignore
+                </button>
+              </form>
+              </div>
+              </td>
+            </tr>
+          <% end %>
+        <% end %>
+      </tbody>
+    </table>
+    </div>
+
+  </div>
+
+
+  <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const userIdElements = document.querySelectorAll(".user-id");
+    const csrfToken = document.querySelector("meta[name='csrf-token']").content;
+    const resultsTable = document.getElementById("results-table");
+
+
+    userIdElements.forEach((userIdElement) => {
+      const userId = userIdElement.textContent;
+      const friendshipButton = userIdElement.closest("tr").querySelector(".interested-button");
+      const ignoreButton = userIdElement.closest("tr").querySelector(".ignore-button");
+      const receivedRequestIdElement = userIdElement.closest("form").querySelector(".received-request-id");
+      const sentRequestIdElement = userIdElement.closest("form").querySelector(".sent-request-id");
+
+      const receivedRequestId = receivedRequestIdElement ? receivedRequestIdElement.textContent.trim() : null;
+      console.log(receivedRequestId);
+      const sentRequestId = sentRequestIdElement ? sentRequestIdElement.textContent.trim() : null;
+
+      if(friendshipButton.textContent === "Accept interest") {
+        ignoreButton.textContent = "Decline Interest";
+      }
+
+      fetch(`/friendship_request/check_status?receiver_id=${userId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          if (data.status === "requested") {
+            friendshipButton.textContent = "Interested";
+            friendshipButton.setAttribute("disabled", true);
+          } else if (data.status === "accept_requested") {
+            friendshipButton.textContent = "Accept interest";
+            ignoreButton.textContent = "Decline Interest";
+             } else if (data.status === "friend") {
+            friendshipButton.textContent = "Friend";
+             ignoreButton.style.display = "none";
+             friendshipButton.style.pointerEvents = "none";
+             friendshipButton.style.backgroundColor = "#3498db";
+             friendshipButton.style.cursor = "not-allowed";
+             friendshipButton.style.fontWeight = "normal";
+          }else {
+            friendshipButton.textContent = "Show Interest";
+          }
+        })
+        .catch((error) => {
+          console.error("There was a problem with the fetch operation:", error);
+
+        });
+
+      fetch(`/user_ignore/check_ignore?ignored_user_id=${userId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          if (data.status === "ignored") {
+            ignoreButton.textContent = "Not interested";
+            resultsTable.style.display = "table";
+            ignoreButton.setAttribute("disabled", true);
+          } else if (data.status === "not_ignored") {
+            resultsTable.style.display = "table";
+          } 
+        })
+        .catch((error) => {
+          console.error("There was a problem with the fetch operation:", error);
+        });
+
+      
+      friendshipButton.addEventListener("click", function () {
+        if (friendshipButton.textContent === "Show Interest") {
+          friendshipButton.textContent = "Request Sending...";
+          friendshipButton.setAttribute("disabled", true);
+
+          // Perform the friendship request
+          fetch("/friendship_request", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRF-TOKEN": csrfToken,
+            },
+            body: JSON.stringify({ receiver_id: userId }),
+          })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error("Network response was not ok");
+              }
+              return response.json();
+            })
+            .then((data) => {
+              if (data.status === "success") {
+                friendshipButton.textContent = "Interested";
+                friendshipButton.setAttribute("disabled", true);
+                ignoreButton.textContent = "Ignore";
+                ignoreButton.removeAttribute("disabled");
+              } else {
+                console.error("Friendship request failed:", data.error);
+                friendshipButton.textContent = "Error";
+              }
+            })
+            .catch((error) => {
+              console.error("There was a problem with the fetch operation:", error);
+              friendshipButton.textContent = "Error";
+            });
+        }
+        else if(friendshipButton.textContent === "Accept interest") {
+          friendshipButton.removeAttribute("disabled");
+          ignoreButton.textContent = "Decline Interest";
+          fetch("/friendship_request/accept", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": csrfToken,
+              },
+              body: JSON.stringify({
+                request_id: receivedRequestId || sentRequestId,
+                user_id: userId,
+              }),
+          })
+              .then((response) => {
+                if (!response.ok) {
+                  throw new Error("Network response was not ok");
+                }
+                return response.json();
+              })
+              .then((data) => {
+                if (data.status === "success") {
+                  console.log("Friendship request accepted");
+                  friendshipButton.textContent = "Friend";
+                  friendshipButton.style.pointerEvents = "none";
+                  ignoreButton.style.display = "none";
+                } else {
+                  console.error("Friendship request failed:", data.error);
+                }
+              })
+              .catch((error) => {
+                console.error("There was a problem with the fetch operation:", error);
+              });
+        }
+      });
+
+      ignoreButton.addEventListener("click", function () {
+          if (ignoreButton.textContent === "Decline Interest") {
+            fetch("/friendship_request/decline", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": csrfToken,
+              },
+              body: JSON.stringify({
+                request_id: receivedRequestId || sentRequestId,
+                user_id: userId,
+              }),
+            })
+              .then((response) => {
+                if (!response.ok) {
+                  throw new Error("Network response was not ok");
+                }
+                return response.json();
+              })
+              .then((data) => {
+                if (data.status === "success") {
+                  console.log("Friendship request declined");
+                  ignoreButton.textContent = "Ignore";
+                  friendshipButton.textContent = "Show Interest";
+                  friendshipButton.removeAttribute("disabled");
+                } else {
+                  console.error("Friendship request failed:", data.error);
+                  ignoreButton.textContent = "Error";
+                }
+              })
+              .catch((error) => {
+                console.error("There was a problem with the fetch operation:", error);
+                ignoreButton.textContent = "Error";
+              });
+          } else {
+            if(window.location.href.includes("http://localhost:4000")){
+                var confirmation = confirm("Are you sure you want to ignore this user ?");
+            }
+            else{
+              var confirmation = true;
+            }
+            
+
+            if (confirmation) {
+              fetch("/user_ignore", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-CSRF-TOKEN": csrfToken,
+                },
+                body: JSON.stringify({ ignored_user_id: userId }),
+              })
+              .then((response) => {
+                if (!response.ok) {
+                  throw new Error("Network response was not ok");
+                }
+                return response.json();
+              })
+              .then((data) => {
+                if (data.status === "success") {
+                  userIdElement.closest("tr").remove();
+                } else {
+                  console.error("Friendship request failed:", data.error);
+                  ignoreButton.textContent = "Error";
+                }
+              })
+              .catch((error) => {
+                console.error("There was a problem with the fetch operation:", error);
+                ignoreButton.textContent = "Error";
+              });
+            } else {
+              console.log("Ignoring canceled");
+            }
+          }
+      });
+    });
+  });
+</script>
+
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false&key=AIzaSyD81PVlVgFCUgsGwlAV7a8GhVrtDYObfhg"></script>
+
+  <script>
+   var locationInput = document.getElementById('location_field');
+   var autoLocation = document.getElementById('auto_location');
+   var autoLocationDetectionInput = document.getElementById('auto_location_detection');
+   content = document.getElementById('content');
+   console.log(autoLocationDetectionInput);
+   
+   var autoLocationDetection = <%= @changeset.data.auto_location_detection %>;
+   
+   var locationFetched = JSON.parse(localStorage.getItem('locationFetched'));
+   var updateInfo = document.getElementById('update_info');
+   let geoText = '';
+   var searchFriendsButton = document.querySelector('#search-friends');
+   const searchForm = document.querySelector('.my-4');
+
+  window.onload = function () {
+  if (window.location.href === "http://localhost:4000/users/friend_search" || window.location.href === "http://localhost:4001/users/friend_search" ) {
+  if (autoLocationDetection && !locationFetched) {
+    updateInfo.style.display = "block";
+    content.style.pointerEvents = 'none';
+    autoLocation.checked = true;
+    locationInput.setAttribute('readonly', 'true');
+    fetchUserLocation();
+    localStorage.setItem('locationFetched', true);
+  } else {
+    localStorage.setItem('locationFetched', 'false');
+    
+  }
+}
+}
+
+function fetchReverseGeocodingData() {
+    let [lat, lng] = geoText.split(',');
+    var latlng = new google.maps.LatLng(lat, lng);
+    var geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ 'latLng': latlng }, function (results, status) {
+        if (status !== google.maps.GeocoderStatus.OK) {
+            locationInput.placeholder = "Error fetching address. Please try again.";
+            locationInput.value = "";
+        }
+        if (status === google.maps.GeocoderStatus.OK) {
+            var address = results[0].formatted_address;
+            geoText = address;
+            locationInput.value = address;
+            document.querySelector('.button-right').click();
+            
+        }
+    });
+}
+
+function fetchUserLocation() {
+    if (geoText === '') {
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(retrievePosition, handleNoPosition);
+            navigator.geolocation.clearWatch(retrievePosition);
+        } else {
+            locationInput.placeholder = 'Geolocation is not supported by this browser.';
+        }
+    } else {
+        locationInput.value = geoText;
+    }
+}
+
+function retrievePosition(position) {
+    if (geoText === '') {
+        geoText = position.coords.latitude + ',' + position.coords.longitude;
+        locationInput.value = "";
+        locationInput.placeholder = "Fetching address based on your location...";
+        fetchReverseGeocodingData();  
+        
+    }
+}
+
+function handleNoPosition(position) {
+    if (geoText === '') {
+        locationInput.placeholder = 'Unable to retrieve your location.';
+    }
+   
+}
+</script>
+

@@ -1,0 +1,54 @@
+<style>
+  .sign_for {
+    position: relative;
+    z-index: 2 !important;
+    padding: 30px !important;
+  }
+  .sign_container{
+    padding: 80px !important;
+    width:  800px !important;
+    background-color: #fff !important;
+    border-radius: 10px !important;
+  }
+  main{
+      background-image: url("https://d31xsmoz1lk3y3.cloudfront.net/big/2034378.jpg?v=173193");
+    }
+
+</style>
+
+
+
+
+
+
+<div class="sign_for">
+<div class="mx-auto sign_container">
+  <.header class="text-center">
+    Sign in to account
+    <:subtitle>
+      Don't have an account?
+      <.link navigate={~p"/users/register"} class="font-semibold text-brand hover:underline">
+        Sign up
+      </.link>
+      for an account now.
+    </:subtitle>
+  </.header>
+
+  <.simple_form :let={f} for={@conn.params["user"]} as={:user} action={~p"/users/log_in"}>
+    <.error :if={@error_message}><%= @error_message %></.error>
+
+    <.input field={f[:email]} id="input_email" type="email" label="Email" required />
+    <.input field={f[:password]} id="input_password" type="password" label="Password" required />
+
+    <:actions :let={f}>
+      <.input field={f[:remember_me]} type="checkbox" label="Keep me logged in" />
+      
+    </:actions>
+    <:actions>
+      <.button phx-disable-with="Signing in..." class="w-full" id="sign_in_button">
+        Sign in <span aria-hidden="true">→</span>
+      </.button>
+    </:actions>
+  </.simple_form>
+</div>
+</div>

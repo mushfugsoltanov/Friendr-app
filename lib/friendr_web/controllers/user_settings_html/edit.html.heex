@@ -1,0 +1,62 @@
+<style>
+  .mas{
+    position: relative;
+    z-index: 2 !important;
+    padding: 30px !important;
+    background-color: #fff;
+    border-radius: 10px;
+    max-width: 800px !important;
+  }
+  .form_container{
+    padding: 10px !important;
+    max-width: 500px;
+  }
+  main{
+      background-image: url("https://th.bing.com/th/id/OIP.m--46J0sBJLbkmLJbKfqbgAAAA?rs=1&pid=ImgDetMain");
+
+    }
+    .pas_for{
+      color: #2c3e50;
+    }
+</style>
+
+<div class="mas mx-auto">
+<div class="form_container mx-auto">
+   <div>
+    <h1 class="text-4xl font-bold mt-4 mb-8 pas_for text-center">Change Your Password</h1>
+    <.simple_form
+      :let={f}
+      for={@password_changeset}
+      action={~p"/users/settings"}
+      id="update_password"
+    >
+      <.error :if={@password_changeset.action}>
+        Oops, something went wrong! Please check the errors below.
+      </.error>
+
+      <.input field={f[:action]} type="hidden" name="action" value="update_password" id="new_password" />
+
+      <.input field={f[:password]} type="password" label="New password" required />
+      <.input
+        field={f[:password_confirmation]}
+        type="password"
+        label="Confirm new password"
+        id="confirm_password"
+        required
+      />
+
+      <.input
+        field={f[:current_password]}
+        name="current_password"
+        type="password"
+        label="Current password"
+        id="current_password_for_password"
+        required
+      />
+      <:actions>
+        <.button phx-disable-with="Changing..." id="change_pass">Change Password</.button>
+      </:actions>
+    </.simple_form>
+  </div>
+</div>
+</div>

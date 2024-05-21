@@ -1,0 +1,13 @@
+compile:
+  stage: build
+  image: elixir:1.14.0-alpine
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - _build
+      - deps
+  script:
+    - mix local.hex --force
+    - mix local.rebar --force
+    - mix deps.get
+    - mix compile

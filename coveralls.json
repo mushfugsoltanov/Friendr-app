@@ -1,0 +1,19 @@
+{
+    "skip_files": [
+      "test",
+      "lib/friendr.ex",
+      "lib/friendr_web.ex",
+      "lib/friendr",
+      "lib/friendr_web/endpoint.ex",
+      "lib/friendr_web/gettext.ex",
+      "lib/friendr_web/router.ex",
+      "lib/friendr_web/telemetry.ex",
+      "lib/friendr_web/components/core_components.ex",
+      "lib/friendr_web/controllers/user_confirmation_controller.ex",
+      "lib/friendr_web/controllers/user_profile_controller.ex",
+      "lib/friendr_web/controllers/user_registration_controller.ex",
+      "lib/friendr_web/controllers/user_reset_password_controller.ex",
+      "lib/friendr_web/controllers/user_session_controller.ex",
+      "lib/friendr_web/controllers/user_settings_controller.ex"
+    ]
+  }

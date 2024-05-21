@@ -1,0 +1,316 @@
+<style>
+.elar {
+      max-width: 800px !important;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 10px;
+      position: relative;
+      z-index: 2;
+}
+
+main{
+      background-image: url("https://wallpapercave.com/wp/wp2237218.jpg");
+      background-size: cover;
+      background-position: center;
+}
+
+#map-container {
+    display: none;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-out;
+  }
+
+#map {
+    height: 300px;
+    width: 100%;
+    margin-top: 10px;
+  }
+</style>
+<div class="elar">
+  <.header>
+    Edit Event "<%= @event.name %>"
+  </.header>
+
+  <.simple_form :let={f} for={@changeset} action={~p"/events/#{@event}"}>
+    <.error :if={@changeset.action}>
+      Oops, something went wrong! Please check the errors below.
+    </.error>
+    <.input field={f[:name]} type="text" label="Name" />
+    <.input field={f[:date]} type="datetime-local" id="input_date" label="Date" max="9999-12-31T23:59" />
+     <div>
+      <div class="flex justify-evenly">
+      <div class="form-group" style=" display: inline-flex; align-items: center;">
+        <input id="manual_location" name="Location" type="radio" value="Location" class="cursor-pointer" checked="true" >
+        <label for="manual_location" class="control-label ms-2 cursor-pointer"><i>Edit Address Manually</i></label>
+      </div>
+
+      <div class="form-group" style=" display: inline-flex; align-items: center;">
+        <input id="pickLocationBtn" name="Location" type="radio" value="Location" class="cursor-pointer" >
+        <label for="pickLocationBtn" class="control-label ms-2 cursor-pointer"><i>Change Address by picking from Map</i></label>
+      </div>
+    </div>
+    <.input field={f[:location]}  id="location_field"  type="text"  required />
+    <.input field={f[:manual_detection]} type="hidden" id="manual_detection" />
+
+    </div>
+      <div id="map-container">
+    <div id="map"></div>
+  </div>
+    <.input field={f[:price]} type="number" label="Price" step="any" />
+    <.input field={f[:description]} type="textarea" label="Description" />
+    <.input field={f[:is_public]} type="checkbox" label="Is public" id="is_public" />
+    <div id="privateEventEmails"  style="display: none;">
+      <.input field={f[:temp]} name="event_list" id="privateEventEmailsInput" type="textarea" label="List of Users (space-separated)" />
+    </div>
+    <p class="user_emails"  style="display: none;"><%= @user_emails %></p>
+
+    <div class="mt-5">
+      <label for="topics" class="control-label text-sm text-zinc-800 font-semibold">Select the Event's Topics</label><br />
+      <select id="topics" name="topics[]"multiple="multiple" required="required"
+              class="w-full rounded-lg mt-2 cursor-pointer border-zinc-300 focus:border-zinc-400 focus:ring-0">
+        <%= for topic <- @topics do %>
+          <option
+            value={topic.id}
+            selected={Enum.any?(@event.topics, &(&1.id == topic.id))}>
+            <%= topic.name %>
+          </option>
+        <% end %>
+      </select>
+    </div>
+
+
+    <:actions>
+      <.button id="save_button">Save Event</.button>
+    </:actions>
+  </.simple_form>
+
+</div>
+
+<script>
+const publicCheckbox = document.getElementById('is_public');
+const emailInput = document.getElementById('privateEventEmails');
+const privateEventEmailsInput = document.getElementById('privateEventEmailsInput');
+const saveButton = document.getElementById('save_button');
+const user_emails = document.querySelector('.user_emails').innerText;
+
+
+document.addEventListener('DOMContentLoaded', function() {
+
+var dateInput = document.getElementById('input_date');
+var currentDate = new Date();
+var offsetMinutes = currentDate.getTimezoneOffset();
+currentDate.setMinutes(currentDate.getMinutes() - offsetMinutes);
+
+let currentTimeString = currentDate.getHours() + ':' + currentDate.getMinutes();
+console.log(currentTimeString);
+
+var currentDateString = currentDate.toISOString().slice(0, 16);
+dateInput.setAttribute('min', currentDateString);
+
+  const userEmailsArray = user_emails.split(' ');
+  if (userEmailsArray.length > 1) {
+    const remainingEmails = userEmailsArray.slice(1).join(' ');
+
+    if (publicCheckbox.checked) {
+       privateEventEmailsInput.value = '';
+      emailInput.style.display = 'none';
+    } else {
+      emailInput.style.display = 'block';
+      privateEventEmailsInput.textContent = remainingEmails;
+    }
+  } else {
+     if (publicCheckbox.checked) {
+       privateEventEmailsInput.value = '';
+      emailInput.style.display = 'none';
+    } else {
+      emailInput.style.display = 'block';
+      privateEventEmailsInput.textContent = user_emails;
+    }
+    
+  }
+});
+
+publicCheckbox.addEventListener('change', function() {
+  if (this.checked) {
+     privateEventEmailsInput.value = '';
+    emailInput.style.display = 'none';
+  } else {
+    emailInput.style.display = 'block';
+  }
+});
+
+saveButton.addEventListener('click', function() {
+  if (!publicCheckbox.checked) {
+    privateEventEmailsInput.setAttribute("required", "required"); 
+  } else {
+     privateEventEmailsInput.value = '';
+    privateEventEmailsInput.removeAttribute("required");
+  }
+});
+
+
+</script>
+
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false&key=AIzaSyD81PVlVgFCUgsGwlAV7a8GhVrtDYObfhg"></script>
+
+  <script>
+
+
+   var locationInput = document.getElementById('location_field');
+   var manualLocation = document.getElementById('manual_location');
+   let geoText = '';
+   var map;
+   var mapMarkers = [];
+
+
+ function clearMapMarkers() {
+    mapMarkers.forEach(function (marker) {
+      marker.setMap(null);
+    });
+    mapMarkers = [];
+  }
+
+  function enableMapInteraction() {
+    // Clear existing markers on the map
+    clearMapMarkers();
+
+    // Allow the user to click on the map to pick a new location
+    map.addListener('click', function (event) {
+      // Clear existing markers on the map
+      clearMapMarkers();
+
+      // Add a marker at the clicked location
+      var marker = new google.maps.Marker({
+        position: event.latLng,
+        map: map,
+        title: 'Selected Location'
+      });
+
+      // Save the marker in an array for future reference
+      mapMarkers.push(marker);
+
+      // Update the location field with the new coordinates
+        var geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ 'location': event.latLng }, function (results, status) {
+        if (status === google.maps.GeocoderStatus.OK) {
+          if (results[0]) {
+            // Update the location field with the address
+            locationInput.value = results[0].formatted_address;
+          } else {
+            console.error('No results found');
+          }
+        } else {
+          console.error('Geocoder failed due to: ' + status);
+        }
+      });
+    });
+  }
+
+  function initMap() {
+    // Set the initial center of the map (you can adjust this based on your needs)
+    var initialCenter = { lat: 58.384323, lng: 26.726688 }; 
+
+    // Get the location entered by the user
+    var enteredLocation = locationInput.value;
+
+    // Create a new map
+    map = new google.maps.Map(document.getElementById('map'), {
+      center: initialCenter,
+      zoom: 15, // Set the initial zoom level
+      mapTypeId: google.maps.MapTypeId.ROADMAP // Set the map type
+    });
+
+    // Try to geocode the entered location and center the map
+    var geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ 'address': enteredLocation }, function (results, status) {
+      if (status === google.maps.GeocoderStatus.OK) {
+        var userLocation = results[0].geometry.location;
+
+        // Center the map on the user's entered location
+        map.setCenter(userLocation);
+
+        // Add a marker at the user's entered location
+        var marker = new google.maps.Marker({
+          position: userLocation,
+          map: map,
+          title: 'Entered Location'
+        });
+        mapMarkers.push(marker);
+      } else {
+        // Handle geocoding error
+        console.error('Geocode was not successful for the following reason: ' + status);
+      }
+    });
+  }
+  function updateMap() {
+      var locationInput = document.getElementById('location_field');
+      var enteredLocation = locationInput.value;
+
+      // Try to geocode the entered location and update the map
+      var geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ 'address': enteredLocation }, function (results, status) {
+        if (status === google.maps.GeocoderStatus.OK) {
+          var userLocation = results[0].geometry.location;
+
+          // Center the map on the user's updated location
+          map.setCenter(userLocation);
+
+          // Clear existing markers on the map
+          mapMarkers.forEach(function (marker) {
+            marker.setMap(null);
+          });
+
+          // Add a marker at the user's updated location
+          var marker = new google.maps.Marker({
+            position: userLocation,
+            map: map,
+            title: 'Updated Location'
+          });
+
+          // Save the marker in an array for future reference
+          mapMarkers.push(marker);
+        } else {
+          // Handle geocoding error
+          console.error('Geocode was not successful for the following reason: ' + status);
+        }
+      });
+    }
+
+  // Add a click event listener to the button
+  document.getElementById('pickLocationBtn').addEventListener('click', () => {
+    enableMapInteraction();
+    locationInput.setAttribute('readonly', 'true');
+    document.getElementById('map-container').style.display = 'block';
+    document.getElementById('map-container').style.maxHeight = '500px';
+
+});
+
+
+
+   window.onload = function () {
+        initMap();
+      var locationInput = document.getElementById('location_field');
+      locationInput.addEventListener('input', updateMap);   
+
+     };
+
+
+manualLocation.addEventListener('click', () => {
+    locationInput.placeholder = "Enter a specific address (e.g., Kivi 4, 51009 Tartu, Estonia)";
+    locationInput.removeAttribute('readonly');
+    locationInput.value = '';
+    locationInput.focus();
+    document.getElementById('map-container').style.display = 'none';
+});
+
+pickLocationBtn.addEventListener('click', () => {
+      locationInput.placeholder = "Pick address from below map";
+      enableMapInteraction();
+      locationInput.setAttribute('readonly', 'true');
+      document.getElementById('map-container').style.display = 'block';
+      document.getElementById('map-container').style.maxHeight = '500px';
+   }); 
+
+</script>

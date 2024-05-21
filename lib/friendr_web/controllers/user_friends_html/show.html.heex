@@ -1,0 +1,281 @@
+
+<style>
+  body {
+    background-color: #f5f5f5;
+    color: #333;
+    margin: 0;
+    padding: 0;
+  }
+
+  .profile-container {
+    max-width: 1000px;
+    margin: 20px auto;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    padding: 20px;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 2;
+    display: flex;
+  }
+
+  .profile-photo {
+    flex: 0 0 150px;
+    height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 20px;
+  }
+
+  .profile-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .profile-info {
+    flex: 1;
+  }
+
+  h1 {
+    color: #333;
+    font-size: 3.5rem;
+    margin-bottom: 10px;
+  }
+
+  p {
+    color: #666;
+    margin: 10px 0;
+    font-size: 2.1rem;
+  }
+
+  .edit-button {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin-top: 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .edit-button:hover {
+    background-color: #45a049;
+  }
+
+  .edit-button:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.2);
+    transition: width 0.3s;
+  }
+
+  .edit-button:hover:before {
+    width: 100%;
+  }
+   button {
+      background-color: #2c3e50 !important;
+      color: #fff;
+      font-size: 16px;
+      padding: 8px 6px;
+      border-radius: 5px;
+      cursor: pointer;
+      outline: none !important;
+    }
+
+    button:hover {
+      background-color: #34495e;
+    }
+   
+
+    .ignore-button {
+      background-color: #95a5a6 !important;
+      width: 90% !important;
+      background-color: #607d8b !important;
+      font-weight: bolder !important;
+    }
+
+    .ignore-button:hover {
+      background-color: #7f8c8d !important;
+    }
+
+    .message-button {
+      width: 50% !important;
+      font-weight: bolder !important;
+      background-color: #3bb143 !important;
+      color: #fff;
+      font-size: 16px;
+      padding: 8px 6px;
+      border-radius: 5px;
+      cursor: pointer;
+      outline: none !important;
+      text-align: center;
+    }
+
+    .res_for {
+      color: #2c3e50;
+    }
+
+  .receiver_id{
+      display: none;
+    }
+    .csrf{
+      display: none !important;
+    }
+    
+
+    .ignore-button:disabled {
+      background-color: #bdc3c7 !important;
+      border-color: #bdc3c7 !important;
+      cursor: not-allowed !important;
+    }
+
+    .user-id{
+      display: none !important;
+    }
+    .received-request-id{
+      display: none !important;
+    }
+    .sent-request-id{
+      display: none !important;
+    }
+
+    .flex_container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    row-gap: 3px !important;
+}
+
+
+.button_container{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: 5px !important;
+  width: 50% !important;
+}
+
+  main {
+    background-image: url("https://static1.srcdn.com/wordpress/wp-content/uploads/2021/01/A-collage-of-the-faces-of-the-main-cast-of-Friends-all-smiling-slightly.jpg");
+    background-size: cover;
+    background-position: center;
+  }
+</style>
+
+<div class="profile-container">
+  <div class="profile-photo">
+    <img src="https://via.placeholder.com/150" alt="Default Profile Photo">
+  </div>
+
+  <div class="profile-info">
+    <h1>User Profile</h1>
+
+
+    <div style="display: flex">
+      <form id="friendship-request-form" method="post" class="button_container">
+      
+                    <%= for request <- @user.received_friendship_requests do %>
+                      <%= if request.status do %>
+                        <p name="received_request_id" type="hidden" class="received-request-id"><%= request.id %></p>
+                      <% end %>
+                    <% end %>
+                    <%= for request <- @user.sent_friendship_requests do %>
+                      <%= if request.status do %>
+                        <p name="sent_request_id" type="hidden" class="sent-request-id"><%= request.id %></p>
+                      <% end %>
+                    <% end %>
+                    <p name="receiver_id" type="hidden" class="user-id"><%= @user.id %></p>
+                  <button type="button" class="ignore-button">
+                      Unfriend
+                    </button>
+                  </form>
+      <a href={~p"/chat/#{@user.id}"} class="message-button">Message</a>
+    </div>
+    <p><strong>Name:</strong> <%= @user.name %></p>
+    <p><strong>Date of Birth:</strong> <%= @user.date_of_birth %></p>
+    <p><strong>Phone Number:</strong> <%= @user.phone %></p>
+    <p><strong>Bio:</strong> <%= @user.description %></p>
+    <p><strong>Location:</strong> <%= @user.location %></p>
+    <p><strong>Interests:</strong>
+      <%= for interest <- @user.interests, interest.relationship == 1 do %>
+        <%= interest.topic.name %>
+      <% end %>
+    </p>
+    <p><strong>Hates:</strong>
+      <%= for interest <- @user.interests, interest.relationship == 0 do %>
+        <%= interest.topic.name %>
+      <% end %>
+    </p>
+    <.link navigate={~p"/users/friends"} class="button-left"> &larr;  Back to friends</.link>
+  </div>
+
+
+</div>
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const userIdElement = document.querySelector(".user-id");
+    const csrfToken = document.querySelector("meta[name='csrf-token']").content;
+
+if (userIdElement) {
+  const userId = userIdElement.textContent.trim();
+ 
+  const ignoreButton = document.querySelector(".profile-container .ignore-button");
+  const receivedRequestIdElement = document.querySelector(".profile-container .received-request-id");
+  const sentRequestIdElement = document.querySelector(".profile-container .sent-request-id");
+  const receivedRequestId = receivedRequestIdElement ? receivedRequestIdElement.textContent.trim() : null;
+  const sentRequestId = sentRequestIdElement ? sentRequestIdElement.textContent.trim() : null;
+
+  
+
+ignoreButton.addEventListener("click", function () {
+            fetch("/friendship_request/decline", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": csrfToken,
+              },
+              body: JSON.stringify({
+                request_id: receivedRequestId || sentRequestId,
+                user_id: userId,
+              }),
+            })
+              .then((response) => {
+                if (!response.ok) {
+                  throw new Error("Network response was not ok");
+                }
+                return response.json();
+              })
+              .then((data) => {
+                if (data.status === "success") {
+                  console.log("Friendship request declined");
+                  window.location.href = "http://localhost:4000/users/friends";
+                } else {
+                  console.error("Friendship request failed:", data.error);
+                  ignoreButton.textContent = "Error";
+                }
+              })
+              .catch((error) => {
+                console.error("There was a problem with the fetch operation:", error);
+                ignoreButton.textContent = "Error";
+              });
+          
+      });
+      
+      }
+  });
+</script>

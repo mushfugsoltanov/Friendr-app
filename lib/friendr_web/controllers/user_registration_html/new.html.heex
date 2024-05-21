@@ -1,0 +1,136 @@
+<style>
+  .reg_for {
+    position: relative;
+    z-index: 2 !important;
+    padding: 30px !important;
+  }
+  .reg_container{
+    padding: 80px !important;
+    width:  800px !important;
+    background-color: #fff !important;
+    border-radius: 10px !important;
+  }
+   main{
+      background-image: url("https://d31xsmoz1lk3y3.cloudfront.net/big/2034378.jpg?v=173193");
+    }
+
+</style>
+
+<div class="reg_for">
+<div class="mx-auto reg_container">
+<div class="text-center">
+  <h2>Register for an account</h2>
+  <p>
+    Already registered?
+    <a href="/users/log_in" class="font-semibold text-brand hover:underline">Sign in</a>
+    to your account now.
+  </p>
+</div>
+
+
+  <.simple_form :let={f} for={@changeset} action={~p"/users/register"}>
+    <.error :if={@changeset.action == :insert}>
+      Oops, something went wrong! Please check the errors below.
+    </.error>
+
+    <.input field={f[:email]} type="email" label="Email" required id="input_email" />
+    <.input field={f[:password]} type="password" label="Password" required id="input_password" />
+    <.input field={f[:repeat_password]} type="password" label="Repeat Password" required id="input_repeat_password" />
+    <.input field={f[:name]} type="text" label="Name" required  id="input_name" />
+    <.input field={f[:date_of_birth]} type="date" label="Date of Birth" required id="input_date_of_birth" />
+    <.input field={f[:phone]} type="text" label="Phone Number" required id="input_phone" />
+    <.input field={f[:description]} type="textarea" label="Bio" id="input_description" />
+
+  <div>
+
+    <div class="form-group" style="display: inline-flex; align-items: center;">
+      <input id="auto_location" name="Location" type="radio" value="Location" class="cursor-pointer" required>
+      <label for="auto_location" class="control-label ms-2 cursor-pointer"><i>Give permission to Access you location</i></label>
+    </div>
+
+    <.input field={f[:location]} type="text" id="location_field" readonly placeholder="Your Current Location" required  />
+
+  </div>
+    <:actions>
+      <.button phx-disable-with="Creating account..." class="w-full" id="register_button">Create an account</.button>
+    </:actions>
+  </.simple_form>
+  </div>
+
+
+
+
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false&key=AIzaSyD81PVlVgFCUgsGwlAV7a8GhVrtDYObfhg"></script>
+
+  <script>
+
+
+var create_btn= document.getElementById('register_button');
+
+create_btn.addEventListener('click', () => {
+  localStorage.setItem('locationLogin', true);
+
+});
+
+
+   var locationInput = document.getElementById('location_field');
+   var autoLocation = document.getElementById('auto_location');
+
+   let geoText = '';
+
+autoLocation.addEventListener('click', () => {
+    locationInput.value = '';
+    locationInput.setAttribute('readonly', 'true');
+    locationInput.placeholder = "Fetching your current location...";
+    fetchUserLocation();
+});
+
+
+function fetchReverseGeocodingData() {
+    let [lat, lng] = geoText.split(',');
+    var latlng = new google.maps.LatLng(lat, lng);
+    var geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ 'latLng': latlng }, function (results, status) {
+        if (status !== google.maps.GeocoderStatus.OK) {
+            locationInput.placeholder = "Error fetching address. Please try again.";
+            locationInput.value = "";
+        }
+        if (status === google.maps.GeocoderStatus.OK) {
+            var address = results[0].formatted_address;
+            geoText = address;
+            locationInput.value = address;
+        }
+    });
+}
+
+function fetchUserLocation() {
+    if (geoText === '') {
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(retrievePosition, handleNoPosition);
+            navigator.geolocation.clearWatch(retrievePosition);
+        } else {
+            locationInput.placeholder = 'Geolocation is not supported by this browser.';
+        }
+    } else {
+        locationInput.value = geoText;
+    }
+}
+
+function retrievePosition(position) {
+    if (geoText === '') {
+        geoText = position.coords.latitude + ',' + position.coords.longitude;
+        locationInput.value = "";
+        locationInput.placeholder = "Fetching address based on your location...";
+        fetchReverseGeocodingData();
+    }
+}
+
+function handleNoPosition(position) {
+    if (geoText === '') {
+        locationInput.placeholder = 'Unable to retrieve your location.';
+    }
+}
+</script>
+
+
+</div>

@@ -1,0 +1,158 @@
+<style>
+
+
+.button-right{
+  display: none !important;
+}
+#location_field{
+  display: none !important;}
+
+#update_info{
+  display: none;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  margin: 10px auto;
+  font-size: 30px;
+}
+.location{
+  background-color: transparent !important;
+  display: none !important;
+}
+.simple_form{
+  background-color: transparent !important;
+}
+#welcome-message a{
+  border: 1px solid #fff;
+  padding: 10px 20px !important;
+  font-size: 20px;
+  border-radius: 5px !important;
+  margint-top: 20px !important;
+  transition: all 0.3s ease-in-out;
+  position: relative;
+}
+#welcome-message a:hover{
+  background-color: #fff;
+  color: #2c3e50;
+}
+
+#welcome-message p{
+  margin-bottom: 50px !important;
+}
+</style>
+
+
+<div id="welcome-message" class="container mx-auto p-4">
+ <span id="update_info"><i>Please wait your location is updating...</i></span>
+<div class="location" id="location">
+  <.simple_form :let={f} for={@changeset} action={~p"/"} class="simple_form">
+    <.error :if={@changeset.action == :insert}  class="simple_form">
+      Oops, something went wrong! Please check the errors below.
+    </.error>
+  <div>
+    <div class="form-group" style="display: none; align-items: center;"  type="hidden">
+      <input id="auto_location" name="Location" type="radio" value="Location" class="cursor-pointer" required>
+      <label for="auto_location" class="control-label ms-2 cursor-pointer"><i>Give permission to Access you location</i></label>
+    </div>
+    <.input field={f[:auto_location_detection]} type="hidden" id="auto_location_detection" />
+
+    <.input field={f[:location]} type="text" id="location_field" readonly  placeholder="Your Current Location" required />
+    </div>
+
+   <:actions class="button-row mt-1">
+      <.button phx-disable-with="Updating..." class="button-right" type="hidden">Update</.button>
+    </:actions>
+  </.simple_form>
+  </div>
+
+
+
+
+      <h2 class="text-8xl font-semibold text-white-800 mb-4">Welcome to Friendr!</h2>
+       
+      <p class="text-4xl text-white-600">
+        Thank you for being part of our community. Connect with friends, update your profile, and enjoy your time on Friendr!
+      </p>
+      
+      <a href={~p"/events/new"} id="events">Create an Event</a>
+</div>
+
+
+
+
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false&key=AIzaSyD81PVlVgFCUgsGwlAV7a8GhVrtDYObfhg"></script>
+
+ <script>
+   var locationInput = document.getElementById('location_field');
+   var autoLocation = document.getElementById('auto_location');
+   var autoLocationDetectionInput = document.getElementById('auto_location_detection');
+   var head=document.getElementById('head');
+
+   var autoLocationDetection = <%= @changeset.data.auto_location_detection %>;
+
+   var locationLogin = JSON.parse(localStorage.getItem('locationLogin'));
+   var updateInfo = document.getElementById('update_info');
+   let geoText = '';
+
+  window.onload = function () {
+  if (window.location.href === "http://localhost:4000/") {
+  if (autoLocationDetection && !locationLogin) {
+    head.style.pointerEvents = 'none';
+    updateInfo.style.display = "block";
+    autoLocation.checked = true;
+    locationInput.setAttribute('readonly', 'true');
+    fetchUserLocation();
+    localStorage.setItem('locationLogin', true);
+  }
+}
+}
+
+function fetchReverseGeocodingData() {
+    let [lat, lng] = geoText.split(',');
+    var latlng = new google.maps.LatLng(lat, lng);
+    var geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ 'latLng': latlng }, function (results, status) {
+        if (status !== google.maps.GeocoderStatus.OK) {
+            locationInput.placeholder = "Error fetching address. Please try again.";
+            locationInput.value = "";
+        }
+        if (status === google.maps.GeocoderStatus.OK) {
+            var address = results[0].formatted_address;
+            geoText = address;
+            locationInput.value = address;
+            document.querySelector('.button-right').click();
+
+        }
+    });
+}
+
+function fetchUserLocation() {
+    if (geoText === '') {
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(retrievePosition, handleNoPosition);
+            navigator.geolocation.clearWatch(retrievePosition);
+        } else {
+            locationInput.placeholder = 'Geolocation is not supported by this browser.';
+        }
+    } else {
+        locationInput.value = geoText;
+    }
+}
+
+function retrievePosition(position) {
+    if (geoText === '') {
+        geoText = position.coords.latitude + ',' + position.coords.longitude;
+        locationInput.value = "";
+        locationInput.placeholder = "Fetching address based on your location...";
+        fetchReverseGeocodingData();
+
+    }
+}
+
+function handleNoPosition(position) {
+    if (geoText === '') {
+        locationInput.placeholder = 'Unable to retrieve your location.';
+    }
+
+}
+</script>
